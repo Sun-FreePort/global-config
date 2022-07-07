@@ -22,7 +22,7 @@ class GlobalConfigServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the GlobalConfig routes.
+     * Register the GlobalConfigManager routes.
      *
      * @return void
      */
@@ -36,7 +36,7 @@ class GlobalConfigServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the GlobalConfig routes.
+     * Register the GlobalConfigManager routes.
      *
      * @return void
      */
@@ -48,7 +48,7 @@ class GlobalConfigServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the GlobalConfig resources.
+     * Register the GlobalConfigManager resources.
      *
      * @return void
      */
@@ -64,13 +64,16 @@ class GlobalConfigServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        app()->bind('king', function() {
+            return new GlobalConfigManager;
+        });
 //        $this->configure();
 //        $this->registerServices();
     }
 
     // TODO
     /**
-     * Setup the configuration for GlobalConfig.
+     * Setup the configuration for GlobalConfigManager.
      *
      * @return void
      */
@@ -80,12 +83,12 @@ class GlobalConfigServiceProvider extends ServiceProvider
 //            __DIR__ . '/../config/horizon.php', 'horizon'
 //        );
 //
-//        GlobalConfig::use(config('horizon.use', 'default'));
+//        GlobalConfigManager::use(config('horizon.use', 'default'));
     }
 
     // TODO
     /**
-     * Register GlobalConfig's services in the container.
+     * Register GlobalConfigManager's services in the container.
      *
      * @return void
      */

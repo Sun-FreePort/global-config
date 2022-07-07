@@ -29,7 +29,7 @@
                 "Yggdrasill\\GlobalConfig\\GlobalConfigServiceProvider"
             ],
             "aliases": {
-                "GlobalConfig": "Yggdrasill\\GlobalConfig\\GlobalConfig"
+                "GlobalConfig": "GlobalConfigManager"
             }
         }
     },
