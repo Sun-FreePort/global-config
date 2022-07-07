@@ -64,7 +64,7 @@ class GlobalConfigServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        app()->bind('king', function() {
+        app()->bind('globalConfig', function() {
             return new GlobalConfigManager;
         });
 //        $this->configure();

@@ -10,6 +10,13 @@ class GroupTest extends TestBase
 {
     use RefreshDatabase;
 
+    protected function getPackageProviders($app): array
+    {
+        return [
+            'Yggdrasill\GlobalConfig\GlobalConfigServiceProvider',
+        ];
+    }
+
     /*
      * 分组、前缀的查询
      *

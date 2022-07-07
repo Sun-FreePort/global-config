@@ -10,9 +10,5 @@ abstract class TestBase extends TestCase
     protected function SetUp(): void
     {
         parent::setUp();
-
-        app()->bind('globalConfig', function () {
-            return new \Yggdrasill\GlobalConfig\GlobalConfigManager;
-        });
     }
 }
