@@ -14,7 +14,7 @@ class GlobalConfigCreateConfigValuesTable extends Migration
     public function up()
     {
         Schema::create('gc_config_values', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->autoIncrement();
+            $table->unsignedBigInteger('id')->autoIncrement();
             $table->string('key_full', 255)->comment('全键');
             $table->string('key', 255)->comment('键');
             $table->string('value')->comment('值');

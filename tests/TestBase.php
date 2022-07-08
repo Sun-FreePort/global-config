@@ -4,6 +4,7 @@ namespace Yggdrasill\GlobalConfig\Tests;
 
 use Illuminate\Support\Facades\Redis;
 use Orchestra\Testbench\TestCase;
+use Yggdrasill\GlobalConfig\Models\ConfigPrefix;
 use function Composer\Autoload\includeFile;
 
 abstract class TestBase extends TestCase
@@ -15,26 +16,12 @@ abstract class TestBase extends TestCase
     {
         parent::setUp();
 
-        // TODO 预填充数据
+        Redis::flushdb();
     }
 
     protected function defineEnvironment($app)
     {
         $app['config']->set('global-config', include __DIR__ . '/../config/global-config.php');
-    }
-
-    /**
-     * Define database migrations.
-     *
-     * @return void
-     */
-    protected function defineDatabaseMigrations()
-    {
-//        $this->artisan('clear-compiled')->run();
-//        $this->artisan('optimize:clear')->run();
-//        $this->artisan('cache:clear')->run();
-//        $this->artisan('optimize')->run();
-        $this->artisan('migrate')->run();
     }
 
     /**
@@ -47,5 +34,22 @@ abstract class TestBase extends TestCase
         return [
             'Yggdrasill\GlobalConfig\GlobalConfigServiceProvider',
         ];
+    }
+
+    protected function databaseFactory()
+    {
+        ConfigPrefix::insert([[
+            'key' => $this->group,
+            'name' => '测试分组1',
+            'type' => ConfigPrefix::TYPE_GROUP,
+        ], [
+            'key' => 'group2',
+            'name' => '测试分组2',
+            'type' => ConfigPrefix::TYPE_GROUP,
+        ], [
+            'key' => 'group3',
+            'name' => '测试分组3',
+            'type' => ConfigPrefix::TYPE_GROUP,
+        ]]);
     }
 }

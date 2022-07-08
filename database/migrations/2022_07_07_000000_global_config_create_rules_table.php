@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class GlobalConfigCreateConfigsTable extends Migration
+class GlobalConfigCreateRulesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class GlobalConfigCreateConfigsTable extends Migration
     public function up()
     {
         Schema::create('gc_rules', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->autoIncrement();
+            $table->unsignedBigInteger('id')->autoIncrement();
             $table->unsignedInteger('types')->comment('适用值类型（二进制）');
             $table->string('desc', 64)->default('')->comment('解释');
 

@@ -4,10 +4,12 @@ namespace Yggdrasill\GlobalConfig\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ConfigGroup extends Model
+class ConfigPrefix extends Model
 {
-    public $dateFormat = 'U';
+    protected $table = 'gc_config_prefixes';
+    protected $dateFormat = 'U';
     protected $fillable = [
+        'key',
         'name',
         'type',
     ];

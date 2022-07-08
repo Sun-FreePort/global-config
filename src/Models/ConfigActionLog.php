@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ConfigActionLog extends Model
 {
+    protected $table = 'gc_config_action_logs';
     public $dateFormat = 'U';
     public const UPDATED_AT = null;
     protected $fillable = [

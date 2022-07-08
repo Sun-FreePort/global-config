@@ -14,7 +14,7 @@ class GlobalConfigCreateConfigKeysTable extends Migration
     public function up()
     {
         Schema::create('gc_config_keys', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->autoIncrement();
+            $table->id();
             $table->unsignedInteger('group_id')->comment('组 ID');
             $table->unsignedInteger('prefix_id')->comment('前缀 ID');
             $table->string('key', 255)->comment('配置名');

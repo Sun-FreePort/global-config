@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class GlobalConfigCreatePrefixesTable extends Migration
+class GlobalConfigCreateConfigPrefixesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,9 @@ class GlobalConfigCreatePrefixesTable extends Migration
      */
     public function up()
     {
-        Schema::create('gc_prefixes', function (Blueprint $table) {
+        Schema::create('gc_config_prefixes', function (Blueprint $table) {
             $table->id();
-            $table->string('key', 255)->comment('键名');
+            $table->string('key', 255)->comment('键名')->unique();
             $table->string('name', 255)->comment('语义化名');
             $table->string('type', 255)->comment('类型'); // 参见模型内 TYPE_* 常量
 

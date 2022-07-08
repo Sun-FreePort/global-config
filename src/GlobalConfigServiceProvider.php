@@ -83,40 +83,5 @@ class GlobalConfigServiceProvider extends ServiceProvider
         app()->singleton('globalConfig', function ($app) {
             return new GlobalConfigManager(new GlobalConfigCacheManager($app));
         });
-//        app()->bind('globalConfig', function() {
-//            return new GlobalConfigManager(new GlobalConfigCacheManager());
-//        });
-//        $this->configure();
-//        $this->registerServices();
-    }
-
-    // TODO
-    /**
-     * Setup the configuration for GlobalConfigManager.
-     *
-     * @return void
-     */
-    protected function configure()
-    {
-//        $this->mergeConfigFrom(
-//            __DIR__ . '/../config/horizon.php', 'horizon'
-//        );
-//
-//        GlobalConfigManager::use(config('horizon.use', 'default'));
-    }
-
-    // TODO
-    /**
-     * Register GlobalConfigManager's services in the container.
-     *
-     * @return void
-     */
-    protected function registerServices()
-    {
-//        foreach ($this->serviceBindings as $key => $value) {
-//            is_numeric($key)
-//                ? $this->app->singleton($value)
-//                : $this->app->singleton($key, $value);
-//        }
     }
 }

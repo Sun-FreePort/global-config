@@ -41,8 +41,8 @@ class RedisCache implements GlobalConfigCacheInterface
             }
         }
 
-        if (is_array($keyAndValue[0]) && isset(
-                $keyAndValue[array_key_first($keyAndValue)])) {
+        $key = array_key_first($keyAndValue);
+        if (isset($keyAndValue[0][$key]) && is_array($keyAndValue[0][$key])) {
             foreach ($keyAndValue as $key => $value) {
                 if (!is_array($value)) {
                     throw new \InvalidArgumentException("Only set same type value.");
@@ -51,6 +51,11 @@ class RedisCache implements GlobalConfigCacheInterface
             }
         }
 
-        Redis::mset($keyAndValue);
+        Redis::mset(...$keyAndValue);
+    }
+
+    public function deletes(array ...$keys): void
+    {
+        Redis::del(...$keys);
     }
 }

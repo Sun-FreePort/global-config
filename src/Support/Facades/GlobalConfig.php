@@ -7,15 +7,15 @@ use Yggdrasill\GlobalConfig\GlobalConfigManager;
 
 /**
  * @method static array groupsGet(string ...$key)
- * @method static int groupsAdd(array ...$items)
- * @method static bool groupsChange(array $items)
- * @method static bool groupsDelete(array $itemIDs)
+ * @method static bool groupsAdd(array ...$items)
+ * @method static void groupsChange(array ...$items)
+ * @method static void groupsDelete(array $itemIDs)
  *
  * @method static array configsGet(string ...$key)
  * @method static array configsGetByGroup(string ...$group)
- * @method static int configsAdd(array $items)
- * @method static bool configsChange(array $items)
- * @method static bool configsDelete(array $itemIDs)
+ * @method static bool configsAdd(array ...$items)
+ * @method static void configsChange(array ...$items)
+ * @method static void configsDelete(array $itemIDs)
  *
  * @method static string[] fillKeys (string $group, string $prefix, string ...$keys)
  */

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class GlobalConfigCreateConfigActionLogTable extends Migration
+class GlobalConfigCreateConfigActionLogsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class GlobalConfigCreateConfigActionLogTable extends Migration
     public function up()
     {
         Schema::create('gc_config_action_logs', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->autoIncrement();
+            $table->unsignedBigInteger('id')->autoIncrement();
             $table->unsignedBigInteger('belong_id')->comment('操作项 ID');
             $table->unsignedBigInteger('author_id')->comment('操作人 ID');
             $table->string('type', 255)->comment('操作类型');
