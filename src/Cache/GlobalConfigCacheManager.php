@@ -5,6 +5,10 @@ namespace Yggdrasill\GlobalConfig\Cache;
 use Illuminate\Contracts\Cache\Store;
 use InvalidArgumentException;
 
+/**
+ * @method GlobalConfigCacheInterface array gets(string ...$keys);
+ * @method GlobalConfigCacheInterface void sets(array ...$keyAndValue);
+ */
 class GlobalConfigCacheManager
 {
     /**
@@ -32,12 +36,21 @@ class GlobalConfigCacheManager
     }
 
     /**
+     * Magic functional to store instance.
+     * @param $name
+     * @param $arguments
+     * @return mixed
+     */
+    public function __call($name, $arguments)
+    {
+        return $this->store->$name(...$arguments);
+    }
+
+    /**
      * Get the cache connection configuration.
      */
     protected function getConfig($name): array
     {
-        print_r($this->app['config']);
-        exit;
         if (!is_null($name) && $name !== 'null') {
             return $this->app['config']["global-config.cache"];
         }

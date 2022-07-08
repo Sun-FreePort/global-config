@@ -4,6 +4,7 @@ namespace Yggdrasill\GlobalConfig\Tests;
 
 use Illuminate\Support\Facades\Redis;
 use Orchestra\Testbench\TestCase;
+use function Composer\Autoload\includeFile;
 
 abstract class TestBase extends TestCase
 {
@@ -15,6 +16,25 @@ abstract class TestBase extends TestCase
         parent::setUp();
 
         // TODO 预填充数据
+    }
+
+    protected function defineEnvironment($app)
+    {
+        $app['config']->set('global-config', include __DIR__ . '/../config/global-config.php');
+    }
+
+    /**
+     * Define database migrations.
+     *
+     * @return void
+     */
+    protected function defineDatabaseMigrations()
+    {
+//        $this->artisan('clear-compiled')->run();
+//        $this->artisan('optimize:clear')->run();
+//        $this->artisan('cache:clear')->run();
+//        $this->artisan('optimize')->run();
+        $this->artisan('migrate')->run();
     }
 
     /**

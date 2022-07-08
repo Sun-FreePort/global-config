@@ -15,7 +15,7 @@ class GlobalConfigManager extends GlobalConfigBase
         $needFindNames = [];
         $result = [];
 
-        for ($i = count($key); $i >= 0; $i--) {
+        for ($i = count($key) - 1; $i >= 0; $i--) {
             ($data[$i] == null)
                 ? array_push($needFindNames, $data[$i])
                 : $result[$key[$i]] = $data[$i];
@@ -24,7 +24,7 @@ class GlobalConfigManager extends GlobalConfigBase
         $dbResult = ConfigGroup::query()
             // TODO 明确一下参数
             ->where('type', ConfigGroup::TYPE_GROUP)
-            ->whereIn('name', $data[$i])
+            ->whereIn('name', $needFindNames)
             ->get()
             ->toArray();
         foreach ($dbResult as $item) {

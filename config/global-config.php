@@ -12,7 +12,7 @@ return [
     */
 
     'cache' => [
-        'drive' => 'redis',
+        'driver' => 'redis',
         'prefix' => '',
     ],
 ];

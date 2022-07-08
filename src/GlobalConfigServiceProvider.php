@@ -5,6 +5,7 @@ namespace Yggdrasill\GlobalConfig;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Yggdrasill\GlobalConfig\Cache\GlobalConfigCacheManager;
 
@@ -20,6 +21,20 @@ class GlobalConfigServiceProvider extends ServiceProvider
         $this->registerConfig();
 //        $this->registerRoutes();
 //        $this->registerResources();
+
+        if (!Schema::hasTable('config_groups')) {
+            $this->registerMigrateV1();
+        }
+    }
+
+    /**
+     * Register the 1 version set all migrate table.
+     *
+     * @return void
+     */
+    protected function registerMigrateV1()
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 
     /**
@@ -44,7 +59,7 @@ class GlobalConfigServiceProvider extends ServiceProvider
     protected function registerConfig()
     {
         $this->publishes([
-            __DIR__ . '/../config/gconfig.php' => config_path('gconfig.php'),
+            __DIR__ . '/../config/global-config.php' => config_path('global-config.php'),
         ]);
     }
 

@@ -2,7 +2,6 @@
 
 namespace Yggdrasill\GlobalConfig\Cache;
 
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Redis;
 
 class RedisCache implements GlobalConfigCacheInterface
@@ -19,8 +18,10 @@ class RedisCache implements GlobalConfigCacheInterface
 
     public function gets(string ...$keys): array
     {
-        foreach ($keys as &$key) {
-            $key = $this->prefix . $key;
+        if ($this->prefix) {
+            foreach ($keys as &$key) {
+                $key = $this->prefix . $key;
+            }
         }
 
         return Redis::mget($keys);
@@ -31,11 +32,13 @@ class RedisCache implements GlobalConfigCacheInterface
         $length = count($keyAndValue);
         if ($length == 0) return;
 
-        $keys = array_keys($keyAndValue);
-        for ($i = $length; $i >= 0; $i--) {
-            $key = $this->prefix . $keys[$i];
-            $keyAndValue[$key] = $keyAndValue[$keys[$i]];
-            unset($keyAndValue[$keys[$i]]);
+        if ($this->prefix) {
+            $keys = array_keys($keyAndValue);
+            for ($i = $length; $i >= 0; $i--) {
+                $key = $this->prefix . $keys[$i];
+                $keyAndValue[$key] = $keyAndValue[$keys[$i]];
+                unset($keyAndValue[$keys[$i]]);
+            }
         }
 
         if (is_array($keyAndValue[0]) && isset(
