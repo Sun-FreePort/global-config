@@ -6,6 +6,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Yggdrasill\GlobalConfig\Cache\GlobalConfigCacheManager;
 
 class GlobalConfigServiceProvider extends ServiceProvider
 {
@@ -16,8 +17,8 @@ class GlobalConfigServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->registerConfig();
 //        $this->registerRoutes();
-//        $this->registerConfig();
 //        $this->registerResources();
     }
 
@@ -43,7 +44,7 @@ class GlobalConfigServiceProvider extends ServiceProvider
     protected function registerConfig()
     {
         $this->publishes([
-            __DIR__ . '/../config/config.php' => config_path('config.php'),
+            __DIR__ . '/../config/gconfig.php' => config_path('gconfig.php'),
         ]);
     }
 
@@ -64,9 +65,12 @@ class GlobalConfigServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        app()->bind('globalConfig', function() {
-            return new GlobalConfigManager;
+        app()->singleton('globalConfig', function ($app) {
+            return new GlobalConfigManager(new GlobalConfigCacheManager($app));
         });
+//        app()->bind('globalConfig', function() {
+//            return new GlobalConfigManager(new GlobalConfigCacheManager());
+//        });
 //        $this->configure();
 //        $this->registerServices();
     }

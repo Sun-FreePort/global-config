@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class GlobalConfigCreateConfigsTable extends Migration
+class GlobalConfigCreatePrefixesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,19 @@ class GlobalConfigCreateConfigsTable extends Migration
      */
     public function up()
     {
-        Schema::create('gc_rules', function (Blueprint $table) {
+        Schema::create('gc_config_values', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary()->autoIncrement();
-            $table->unsignedInteger('types')->comment('适用值类型（二进制）');
-            $table->string('desc', 64)->default('')->comment('解释');
+            $table->string('key_full', 255)->comment('全键');
+            $table->string('key', 255)->comment('键');
+            $table->string('value')->comment('值');
+            $table->unsignedInteger('author_by')->comment('最近操作人');
 
             $table->unsignedInteger('deleted_by')->default(0)->comment('删除人');
             $table->unsignedInteger('created_at')->nullable();
             $table->unsignedInteger('updated_at')->nullable();
             $table->unsignedInteger('deleted_at')->nullable();
+
+            $table->index('key_full');
         });
     }
 

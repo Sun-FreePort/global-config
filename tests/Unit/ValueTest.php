@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Yggdrasill\GlobalConfig\Support\Facades\GlobalConfig;
 use Yggdrasill\GlobalConfig\Tests\TestBase;
 
-class ConfigTest extends TestBase
+class ValueTest extends TestBase
 {
     use RefreshDatabase;
 
@@ -17,7 +17,7 @@ class ConfigTest extends TestBase
 //     */
 //    public function test_config_select_test()
 //    {
-//        $result = GlobalConfig::configsGet('testGroup:testPrefix:testKey1');
+//        $result = GlobalConfig::configsGet("{$this->group}:{$this->prefix}:testKey1");
 //        $this->assertSameSize($result, ['keys', 'value']);
 //        $this->assertEquals('testValue1', $result);
 //    }
