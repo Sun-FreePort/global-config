@@ -27,11 +27,16 @@ class RedisCache implements GlobalConfigCacheInterface
         return Redis::mget($keys);
     }
 
+    /**
+     * 批量更新
+     * @param mixed ...$keyAndValue []
+     */
     public function sets(array ...$keyAndValue): void
     {
         $length = count($keyAndValue);
         if ($length == 0) return;
 
+        // 更新前缀
         if ($this->prefix) {
             $keys = array_keys($keyAndValue);
             for ($i = $length; $i >= 0; $i--) {
@@ -41,6 +46,7 @@ class RedisCache implements GlobalConfigCacheInterface
             }
         }
 
+        // 更新值
         $key = array_key_first($keyAndValue);
         if (isset($keyAndValue[0][$key]) && is_array($keyAndValue[0][$key])) {
             foreach ($keyAndValue as $key => $value) {
@@ -54,7 +60,7 @@ class RedisCache implements GlobalConfigCacheInterface
         Redis::mset(...$keyAndValue);
     }
 
-    public function deletes(array ...$keys): void
+    public function deletes(string ...$keys): void
     {
         Redis::del(...$keys);
     }

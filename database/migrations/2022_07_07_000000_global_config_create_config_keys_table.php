@@ -17,11 +17,12 @@ class GlobalConfigCreateConfigKeysTable extends Migration
             $table->id();
             $table->unsignedInteger('group_id')->comment('组 ID');
             $table->unsignedInteger('prefix_id')->comment('前缀 ID');
-            $table->string('key', 255)->comment('配置名');
+            $table->string('key', 255)->comment('配置键');
+            $table->string('key_full', 255)->comment('配置全键');
             $table->string('value')->comment('配置值');
-            $table->string('desc', 255)->default('')->comment('配置值');
+            $table->string('desc', 255)->default('')->comment('描述');
             $table->unsignedTinyInteger('type')->comment('值类型');
-            $table->string('rules', 300)->default('{}')->comment('规则集');
+            $table->string('rules', 300)->default('{}')->comment('规则集'); // 暂无
             $table->unsignedTinyInteger('cache')->default(1)->comment('缓存支持');
             $table->unsignedTinyInteger('active')->default(1)->comment('启停用');
             $table->unsignedTinyInteger('visible')->default(1)->comment('可暴露');
@@ -32,6 +33,7 @@ class GlobalConfigCreateConfigKeysTable extends Migration
             $table->unsignedInteger('deleted_at')->nullable();
 
             $table->index(['group_id', 'prefix_id', 'key']);
+            $table->index('key_full');
         });
     }
 

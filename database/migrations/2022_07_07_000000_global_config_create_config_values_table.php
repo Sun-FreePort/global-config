@@ -17,10 +17,10 @@ class GlobalConfigCreateConfigValuesTable extends Migration
             $table->unsignedBigInteger('id')->autoIncrement();
             $table->string('key_full', 255)->comment('全键');
             $table->string('key', 255)->comment('键');
-            $table->string('value')->comment('值');
+            $table->unsignedBigInteger('key_id')->comment('键 ID');
+            $table->string('value')->comment('值'); // Struct: Type|RealValue
             $table->unsignedInteger('author_by')->comment('最近操作人');
 
-            $table->unsignedInteger('deleted_by')->default(0)->comment('删除人');
             $table->unsignedInteger('created_at')->nullable();
             $table->unsignedInteger('updated_at')->nullable();
             $table->unsignedInteger('deleted_at')->nullable();

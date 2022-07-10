@@ -11,7 +11,7 @@ class ConfigTest extends TestBase
     use RefreshDatabase;
 
 //    /*
-//     * 配置的查询
+//     * 配置细节的查询
 //     *
 //     * @return void
 //     */
@@ -23,7 +23,7 @@ class ConfigTest extends TestBase
 //    }
 //
 //    /*
-//     * 配置的批量动作（增）
+//     * 配置细节的批量动作（增）
 //     *
 //     * @return void
 //     */
@@ -34,7 +34,7 @@ class ConfigTest extends TestBase
 //    }
 //
 //    /*
-//     * 配置的批量动作（删）
+//     * 配置细节的批量动作（删）
 //     *
 //     * @return void
 //     */
@@ -45,7 +45,7 @@ class ConfigTest extends TestBase
 //    }
 //
 //    /*
-//     * 配置的批量动作（改）
+//     * 配置细节的批量动作（改）
 //     *
 //     * @return void
 //     */

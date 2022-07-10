@@ -6,8 +6,9 @@ use Illuminate\Contracts\Cache\Store;
 use InvalidArgumentException;
 
 /**
- * @method GlobalConfigCacheInterface array gets(string ...$keys);
- * @method GlobalConfigCacheInterface void sets(array ...$keyAndValue);
+ * @method static array gets(string ...$keys) from GlobalConfigCacheInterface
+ * @method static void sets(array ...$keyAndValue) from GlobalConfigCacheInterface
+ * @method static void deletes(string ...$keys) from GlobalConfigCacheInterface
  */
 class GlobalConfigCacheManager
 {

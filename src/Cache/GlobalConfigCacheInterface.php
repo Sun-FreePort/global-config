@@ -8,5 +8,5 @@ interface GlobalConfigCacheInterface
 
     public function sets(array ...$keyAndValue): void;
 
-    public function deletes(array ...$keys): void;
+    public function deletes(string ...$keys): void;
 }

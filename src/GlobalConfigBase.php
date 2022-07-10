@@ -3,8 +3,9 @@
 namespace Yggdrasill\GlobalConfig;
 
 use Yggdrasill\GlobalConfig\Cache\GlobalConfigCacheManager;
+use Yggdrasill\GlobalConfig\Exception\GlobalConfigException;
 use Yggdrasill\GlobalConfig\Models\ConfigActionLog;
-use Yggdrasill\GlobalConfig\Models\ConfigValue;
+use Yggdrasill\GlobalConfig\Models\ConfigPrefix;
 
 class GlobalConfigBase
 {
@@ -18,63 +19,43 @@ class GlobalConfigBase
         $this->cache = $cache;
     }
 
-    // TODO 需要了再往这边拆，需求驱动重构
-
-    public function groupsGet(string ...$key): array
+    /**
+     * 获得完整键名
+     * @param string $group
+     * @param string $prefix
+     * @param string ...$keys
+     * @return array
+     * @throws GlobalConfigException
+     */
+    public function fillKeys(string $group, string $prefix, string ...$keys): array
     {
         $result = [];
-        $data = $this->cache->gets(...$key);
+        if (strpos($group, ':')) throw new GlobalConfigException('组名不应包含 : 符号');
+        if (strpos($prefix, ':')) throw new GlobalConfigException('前缀不应包含 : 符号');
 
-        for ($i = count($key); $i >= 0; $i--) {
-            if ($data[$i] == null) {
-                $data[$i] = ConfigValue::query()->where('key_full', $key[$i])->first();
-                if ($data[$i]) {
-                    $data[$i] = $data[$i]->value;
-                }
-            }
-            $result[$key[$i]] = $data[$i];
-        }
-
-        return $result;
-    }
-
-    public function valuesGet(string ...$key): array
-    {
-        $result = [];
-        $data = $this->cache->gets(...$key);
-
-        for ($i = count($key); $i >= 0; $i--) {
-            if ($data[$i] == null) {
-                $data[$i] = ConfigValue::query()->where('key_full', $key[$i])->first();
-                if ($data[$i]) {
-                    $data[$i] = $data[$i]->value;
-                }
-            }
-            $result[$key[$i]] = $data[$i];
+        foreach ($keys as $key) {
+            array_push($result, "{$group}:{$prefix}:{$key}");
         }
 
         return $result;
     }
 
     /**
-     * @param array ...$item [[key_full => value], ...]
+     * 解析全键
+     * @param string $key
      * @return array
+     * @throws GlobalConfigException
      */
-    public function valuesSet(array ...$item): array
-    {
-        $result = [];
+    public function splitKey(string $key) {
+        $result = explode('|', $key, 3);
 
-        for ($i = count($item); $i >= 0; $i--) {
-        }
-//            if ($data[$i] == null) {
-//                $data[$i] = ConfigValue::query()->where('key_full', $key[$i])->first();
-//                if ($data[$i]) {
-//                    $data[$i] = $data[$i]->value;
-//                }
-//            }
-//            $result[$key[$i]] = $data[$i];
+        if (count($result) < 3) throw new GlobalConfigException('键解析失败：全键结构不完整');
 
-        return $result;
+        return [
+            ConfigPrefix::TYPE_GROUP => $result[0],
+            ConfigPrefix::TYPE_PREFIX => $result[1],
+            'key' => $result[2],
+        ];
     }
 
     /**
