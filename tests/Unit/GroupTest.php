@@ -51,7 +51,7 @@ class GroupTest extends TestBase
             'key' => 'group2',
             'name' => '测试分组',
         ]];
-        $result = GlobalConfig::groupsAdd(...$groupDemo);
+        $result = GlobalConfig::groupsAdd($this->authID, ...$groupDemo);
         $this->assertTrue($result);
     }
 
@@ -70,7 +70,7 @@ class GroupTest extends TestBase
             'name' => '测试分组',
         ];
         $this->expectException(GlobalConfigException::class);
-        GlobalConfig::groupsAdd($groupDemo);
+        GlobalConfig::groupsAdd($this->authID, $groupDemo);
     }
 
     /*
@@ -86,9 +86,10 @@ class GroupTest extends TestBase
             'id' => 1,
             'key' => 'fyiuofeiwu',
             'name' => '测试分组213132',
+            'delete' => 0,
         ]];
 
-        GlobalConfig::groupsChange(...$groupDemo);
+        GlobalConfig::groupsChange($this->authID, ...$groupDemo);
         $this->assertIsNumeric(0); // 无意义断言，表示流程正常
     }
 
@@ -99,13 +100,12 @@ class GroupTest extends TestBase
      */
     public function test_group_change_not_exists_test()
     {
-        $groupDemo = [[
+        GlobalConfig::groupsChange($this->authID, [
             'id' => 154242,
             'key' => 'fyiuofeiwu',
             'name' => '测试分组213132',
-        ]];
-
-        GlobalConfig::groupsChange(...$groupDemo);
+            'delete' => 0,
+        ]);
         $this->assertIsNumeric(0);
     }
 
@@ -125,7 +125,7 @@ class GroupTest extends TestBase
         ]];
 
         $this->expectException(GlobalConfigException::class);
-        GlobalConfig::groupsChange(...$groupDemo);
+        GlobalConfig::groupsChange($this->authID, ...$groupDemo);
     }
 
     /*
@@ -137,11 +137,11 @@ class GroupTest extends TestBase
     public function test_group_delete_test()
     {
         $this->databaseFactory();
-        $IDs = [$this->group, '2424', 'group2'];
+        $keys = [$this->group, '2424'];
 
-        $result1 = count(GlobalConfig::groupsGet(...$IDs));
-        GlobalConfig::groupsDelete($IDs);
-        $result2 = count(GlobalConfig::groupsGet(...$IDs));
+        $result1 = count(GlobalConfig::groupsGet(...$keys));
+        GlobalConfig::groupsDeleteByKey($this->authID, ...$keys);
+        $result2 = count(GlobalConfig::groupsGet(...$keys));
 
         $this->assertLessThan($result1, $result2);
         $this->assertIsNumeric(0);

@@ -6,13 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class ConfigValue extends Model
 {
+    public const VALUE_SPLIT = '|';
+
     protected $table = 'gc_config_values';
     public $dateFormat = 'U';
     protected $fillable = [
-        'belong_id',
-        'author_id',
-        'type',
-        'actions',
-        'snapshot',
+        'key_full',
+        'key',
+        'key_id',
+        'value',
+        'author_by',
     ];
 }

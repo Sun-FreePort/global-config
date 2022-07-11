@@ -13,7 +13,6 @@ class ConfigKey extends Model
         'prefix_id',
         'key',
         'key_full',
-        'value',
         'desc',
         'type',
         'rules',

@@ -20,7 +20,6 @@ class GlobalConfigManager extends GlobalConfigBase
     public $fillSelect;
     public $fillCreate;
     public $fillUpdate;
-    public const VALUE_SPLIT = '|';
 
     public function __construct(GlobalConfigCacheManager $cache)
     {
@@ -115,7 +114,7 @@ class GlobalConfigManager extends GlobalConfigBase
      * @param array $keys
      * @throws GlobalConfigException
      */
-    public function groupsDelete(int $authID, array $keys): void
+    public function groupsDeleteByKey(int $authID, string ...$keys): void
     {
         $this->prefixDelete($authID, ConfigPrefix::TYPE_GROUP, $keys);
     }
@@ -172,7 +171,7 @@ class GlobalConfigManager extends GlobalConfigBase
      */
     private function prefixChange(int $authID, string $type, array ...$items): void
     {
-        $length = count($this->fillUpdate);
+        $length = count($this->fillUpdate) + 1; // include delete key
         $deleteIDs = [];
         foreach ($items as $item) {
             if (count($item) != $length) {
@@ -202,7 +201,7 @@ class GlobalConfigManager extends GlobalConfigBase
             foreach ($items as $item) {
                 $id = $item['id'];
                 unset($item['id']);
-                if ($item['type']) {
+                if (key_exists('type', $item)) {
                     throw new GlobalConfigException('无法修改：类型仅能在创建时指定');
                 }
                 if (!isset($item['delete'])) {
@@ -261,6 +260,9 @@ class GlobalConfigManager extends GlobalConfigBase
      */
     private function prefixDelete(int $authID, string $type, array $keys): void
     {
+        if (!count($keys)) {
+            return ;
+        }
         foreach ($keys as $key) {
             if (!is_string($key)) {
                 throw new GlobalConfigException('Group change failed: ID type is not support');
@@ -351,7 +353,7 @@ class GlobalConfigManager extends GlobalConfigBase
     public function configsGet(string ...$keys): array
     {
         return ConfigKey::query()
-            ->whereIn('key', $keys)
+            ->whereIn('key_full', $keys)
             ->get()
             ->toArray();
     }
@@ -377,15 +379,27 @@ class GlobalConfigManager extends GlobalConfigBase
             $keys = [];
             $values = [];
             $time = time();
+            $prefix = ConfigPrefix::query()
+                ->select('id', 'type', 'key')
+                ->where(function ($q) use ($items) {
+                    return $q->where('type', ConfigPrefix::TYPE_GROUP)
+                        ->whereIn('id', Arr::pluck($items, 'group_id'));
+                })
+                ->orWhere(function ($q) use ($items) {
+                    return $q->where('type', ConfigPrefix::TYPE_PREFIX)
+                        ->whereIn('id', Arr::pluck($items, 'prefix_id'));
+                })
+                ->get()
+                ->pluck(null, 'id')
+                ->toArray();
             foreach ($items as $item) {
-                $FULL_KEY = "{$item['group']}, {$item['prefix']}, {$item['key']}";
+                $FULL_KEY = "{$prefix[$item['group_id']]['key']}, {$prefix[$item['prefix_id']]['key']}, {$item['key']}";
                 array_push($keysOnly, $item['key']);
                 array_push($keys, [
                     'group_id' => $item['group_id'],
                     'prefix_id' => $item['prefix_id'],
                     'key' => $item['key'],
                     'key_full' => $FULL_KEY,
-                    'value' => $item['value'],
                     'desc' => $item['desc'],
                     'type' => $item['type'],
                     'created_at' => $time,
@@ -403,7 +417,7 @@ class GlobalConfigManager extends GlobalConfigBase
                     'key_full' => $FULL_KEY,
                     'key' => $item['key'],
                     'key_id' => $keyModels[$item['key']],
-                    'value' => $item['type'] . self::VALUE_SPLIT . ($item['value'] ?? ''),
+                    'value' => $item['type'] . ConfigValue::VALUE_SPLIT . ($item['value'] ?? ''),
                     'author_by' => $authID,
                     'created_at' => $time,
                 ]);
@@ -427,15 +441,19 @@ class GlobalConfigManager extends GlobalConfigBase
         DB::transaction(function () use ($authID, $items) {
             $deleteIDs = [];
             foreach ($items as $item) {
-                if (!$item['delete']) {
+                if (!empty($item['delete'])) {
                     ConfigKey::query()
                         ->where('id', $item['id'])
                         ->update($item);
+
+                    ConfigValue::query()
+                        ->where([''])
+                        ->update(['' => '']);
                 } else {
                     array_push($deleteIDs, $item['id']);
                 }
             }
-            $this->configsDelete($authID, $deleteIDs);
+            $this->configsDelete($authID, ...$deleteIDs);
         });
         return true;
     }
@@ -447,7 +465,7 @@ class GlobalConfigManager extends GlobalConfigBase
      * @return bool
      * @version 0.9
      */
-    public function configsDelete(int $authID, array $itemIDs): bool
+    public function configsDelete(int $authID, int ...$itemIDs): bool
     {
         // FIXME 累了。后续追日志
         DB::transaction(function () use ($authID, $itemIDs) {
@@ -490,18 +508,20 @@ class GlobalConfigManager extends GlobalConfigBase
                 }
             }
 
-            $i = explode(self::VALUE_SPLIT, $result[$key], 2);
-            $type = $i[0];
-            $val = $i[1];
-            switch ($type) {
-                case ConfigKey::TYPE_NUMBER:
-                case ConfigKey::TYPE_STRING_SHORT:
-                case ConfigKey::TYPE_STRING_LONG:
-                    $result[$key] = $val;
-                    break;
-                case ConfigKey::TYPE_BOOL:
-                    $result[$key] = (bool)$val;
-                    break;
+            if ($value) {
+                $i = explode(ConfigValue::VALUE_SPLIT, $result[$key], 2);
+                $type = $i[0];
+                $val = $i[1];
+                switch ($type) {
+                    case ConfigKey::TYPE_NUMBER:
+                    case ConfigKey::TYPE_STRING_SHORT:
+                    case ConfigKey::TYPE_STRING_LONG:
+                        $result[$key] = $val;
+                        break;
+                    case ConfigKey::TYPE_BOOL:
+                        $result[$key] = (bool)$val;
+                        break;
+                }
             }
         }
 
@@ -516,14 +536,14 @@ class GlobalConfigManager extends GlobalConfigBase
      * @throws GlobalConfigException
      * @version 1.0
      */
-    public function valuesChange(int $authID, array ...$items): bool
+    public function valuesChange(int $authID, array $items): bool
     {
         // TODO 计算修改量，量大走 SQL 生成
         $fullKeys = array_keys($items);
         $keysRule = ConfigKey::query()
             ->where('key_full', $fullKeys)
             ->get()
-            ->pluck('*', 'key')
+            ->pluck(null, 'key_full')
             ->toArray();
         if (!count($keysRule)) throw new GlobalConfigException('失败：对应配置项不存在');
 
@@ -557,7 +577,7 @@ class GlobalConfigManager extends GlobalConfigBase
 
                     // TODO 枚举，值内不要带符号
             }
-            $items[$key] = $keysRule[$key]['type'] . self::VALUE_SPLIT . $items[$key];
+            $items[$key] = $keysRule[$key]['type'] . ConfigValue::VALUE_SPLIT . $value;
         }
 
         // 更新
@@ -579,7 +599,9 @@ class GlobalConfigManager extends GlobalConfigBase
                     unset($items[$key]);
                 }
             }
-            $this->cache->sets($items);
+            if (count($items)) {
+                $this->cache->sets($items);
+            }
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
