@@ -22,9 +22,7 @@ class GlobalConfigServiceProvider extends ServiceProvider
 //        $this->registerRoutes();
 //        $this->registerResources();
 
-        if (!Schema::hasTable('config_groups')) {
-            $this->registerMigrateV1();
-        }
+        $this->registerMigrateV1();
     }
 
     /**

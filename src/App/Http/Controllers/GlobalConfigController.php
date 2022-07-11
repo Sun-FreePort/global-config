@@ -20,18 +20,28 @@ class GlobalConfigController extends Controller
      * @param Request $request
      * @return array
      */
-    public function index(Request $request)
+    public function index(Request $request): array
     {
+        $params = $this->validate($request, [
+            'group_id' => ['nullable', 'int', 'min:1'],
+        ], [], [
+            'group_id' => 'ID',
+        ]);
+
         $groups = ConfigPrefix::query()
-            ->where('type', ConfigPrefix::TYPE_GROUP)
-            ->get()
+            ->when(key_exists('group_id', $params), function ($q) use ($params) {
+                return $q->where('id', $params['group_id']);
+            })
+            ->first()
             ->toArray();
+        $prefixes = GlobalConfig::prefixesGetByID($groups['id']);
 
         $ids = Arr::pluck($groups, 'id');
         $configs = GlobalConfig::configsGetByGroupID(...$ids);
 
         return [
             'groups' => $groups,
+            'prefixes' => $prefixes,
             'configs' => $configs,
         ];
     }
@@ -42,7 +52,7 @@ class GlobalConfigController extends Controller
      * @return bool
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function addGroup(Request $request)
+    public function addGroup(Request $request): bool
     {
         $params = $this->validate($request, [
             'data' => ['required', 'array'],
@@ -65,7 +75,7 @@ class GlobalConfigController extends Controller
      * @return bool
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function changeGroup(Request $request)
+    public function changeGroup(Request $request): bool
     {
         $params = $this->validate($request, [
             'data' => ['required', 'array'],
@@ -92,7 +102,7 @@ class GlobalConfigController extends Controller
      * @return bool
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function deleteGroup(Request $request)
+    public function deleteGroup(Request $request): bool
     {
         $params = $this->validate($request, [
             'data' => ['required', 'array'],
@@ -112,7 +122,7 @@ class GlobalConfigController extends Controller
      * @return bool
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function addConfig(Request $request)
+    public function addConfig(Request $request): bool
     {
         $params = $this->validate($request, [
             'data' => ['required', 'array'],
@@ -134,8 +144,10 @@ class GlobalConfigController extends Controller
     /**
      * 更新配置项
      * @param Request $request
+     * @return bool
+     * @throws \Illuminate\Validation\ValidationException
      */
-    public function changeConfig(Request $request)
+    public function changeConfig(Request $request): bool
     {
         $params = $this->validate($request, [
             'data' => ['required', 'array'],
@@ -157,8 +169,10 @@ class GlobalConfigController extends Controller
     /**
      * 移除配置项
      * @param Request $request
+     * @return bool
+     * @throws \Illuminate\Validation\ValidationException
      */
-    public function deleteConfig(Request $request)
+    public function deleteConfig(Request $request): bool
     {
         $params = $this->validate($request, [
             'data' => ['required', 'array'],

@@ -6,12 +6,18 @@ use Illuminate\Support\Facades\Facade;
 use Yggdrasill\GlobalConfig\GlobalConfigManager;
 
 /**
- * @method static array groupsGet(string ...$key)
+ * @method static array groupsGet(string ...$keys)
+ * @method static array groupsGetByID(int ...$ids)
  * @method static bool groupsAdd(int $authID, array ...$items)
  * @method static void groupsChange(int $authID, array ...$items)
  * @method static void groupsDeleteByKey(int $authID, string ...$keys)
+ * @method static array prefixesGet(string ...$keys)
+ * @method static array prefixesGetByID(int ...$ids)
+ * @method static bool prefixesAdd(int $authID, array ...$items)
+ * @method static void prefixesChange(int $authID, array ...$items)
+ * @method static void prefixesDeleteByKey(int $authID, string ...$keys)
  *
- * @method static array configsGet(string ...$key)
+ * @method static array configsGet(string ...$keys)
  * @method static array configsGetByGroupName(string ...$group)
  * @method static array configsGetByGroupID(int ...$group)
  * @method static bool configsAdd(int $authID, array ...$items)

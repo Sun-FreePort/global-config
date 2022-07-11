@@ -17,51 +17,30 @@ class GlobalConfigManager extends GlobalConfigBase
     /**
      * @var array
      */
-    public $fillSelect;
-    public $fillCreate;
-    public $fillUpdate;
 
     public function __construct(GlobalConfigCacheManager $cache)
     {
         parent::__construct($cache);
-        $this->fillUpdate = ['id', 'key', 'name'];
-        $this->fillCreate = ['key', 'name'];
-        $this->fillSelect = ['id', 'key', 'name', 'type'];
     }
 
     /**
      * 获取分组
-     * @param string ...$key
+     * @param string ...$keys
      * @return array
      */
-    public function groupsGet(string ...$key): array
+    public function groupsGet(string ...$keys): array
     {
-        $data = $this->cache->gets(...$key);
-        $needFindNames = [];
-        $result = [];
+        return $this->prefixGet(ConfigPrefix::TYPE_GROUP, true, $keys);
+    }
 
-        for ($i = count($key) - 1; $i >= 0; $i--) {
-            ($data[$i] == null)
-                ? array_push($needFindNames, $key[$i])
-                : $result[$key[$i]] = json_decode($data[$i], true);
-        }
-
-        $dbResult = ConfigPrefix::query()
-            ->select($this->fillSelect)
-            ->where('type', ConfigPrefix::TYPE_GROUP)
-            ->whereIn('key', $needFindNames)
-            ->get()
-            ->toArray();
-        foreach ($dbResult as $item) {
-            $result[$item['key']] = $item;
-            unset($result[$item['key']]['key']);
-
-            $this->cache->sets([
-                $item['key'] => json_encode($result[$item['key']]),
-            ]);
-        }
-
-        return $result;
+    /**
+     * 获取分组（根据 ID）
+     * @param int ...$ids
+     * @return array
+     */
+    public function groupsGetByID(int ...$ids): array
+    {
+        return $this->prefixGet(ConfigPrefix::TYPE_GROUP, false, $ids);
     }
 
     /**
@@ -83,6 +62,37 @@ class GlobalConfigManager extends GlobalConfigBase
     public function groupsChange(int $authID, array ...$items): void
     {
         $this->prefixChange($authID, ConfigPrefix::TYPE_GROUP, ...$items);
+    }
+
+    /**
+     * 删除分组
+     * @param int $authID
+     * @param array $keys
+     * @throws GlobalConfigException
+     */
+    public function groupsDeleteByKey(int $authID, string ...$keys): void
+    {
+        $this->prefixDelete($authID, ConfigPrefix::TYPE_GROUP, $keys);
+    }
+
+    /**
+     * 获取前缀
+     * @param string ...$keys
+     * @return array
+     */
+    public function prefixesGet(string ...$keys): array
+    {
+        return $this->prefixGet(ConfigPrefix::TYPE_PREFIX, true, $keys);
+    }
+
+    /**
+     * 获取前缀（根据 ID）
+     * @param int ...$ids
+     * @return array
+     */
+    public function prefixesGetByID(int ...$ids): array
+    {
+        return $this->prefixGet(ConfigPrefix::TYPE_PREFIX, false, $ids);
     }
 
     /**
@@ -109,208 +119,14 @@ class GlobalConfigManager extends GlobalConfigBase
     }
 
     /**
-     * 删除分组
+     * 删除前缀
      * @param int $authID
      * @param array $keys
      * @throws GlobalConfigException
      */
-    public function groupsDeleteByKey(int $authID, string ...$keys): void
+    public function prefixesDeleteByKey(int $authID, string ...$keys): void
     {
-        $this->prefixDelete($authID, ConfigPrefix::TYPE_GROUP, $keys);
-    }
-
-    /**
-     * 前缀表新增方法。
-     * @param string $type
-     * @param mixed ...$items
-     * @return bool
-     * @throws GlobalConfigException
-     */
-    private function prefixAdd(int $authID, string $type, array ...$items): bool
-    {
-        $keys = [];
-        $creates = [];
-        $i = 0;
-        $ts = time();
-        $length = count($this->fillCreate);
-        foreach ($items as $item) {
-            foreach ($this->fillCreate as $key) {
-                if (count($item) != $length) {
-                    throw new GlobalConfigException("Group add failed: array length not support.");
-                }
-
-                if (!isset($item[$key])) {
-                    throw new GlobalConfigException("Group add failed: {$key} not found.");
-                }
-                $creates[$i][$key] = $item[$key];
-            }
-            $creates[$i]['type'] = $type;
-            $creates[$i]['created_at'] = $ts;
-            $creates[$i]['updated_at'] = $ts;
-            $creates[$i]['deleted_at'] = $ts;
-            $keys[$i] = $item['key'];
-        }
-
-        $checks = ConfigPrefix::query()
-            ->where('type', $type)
-            ->whereIn('key', $keys)
-            ->exists();
-        if ($checks) {
-            throw new GlobalConfigException("Group add failed: keys exists.");
-        }
-
-        return ConfigPrefix::insert($creates);
-    }
-
-    /**
-     * 前缀表更新方法。没异常就是成功
-     * @param int $authID
-     * @param string $type
-     * @param mixed ...$items
-     * @throws GlobalConfigException
-     */
-    private function prefixChange(int $authID, string $type, array ...$items): void
-    {
-        $length = count($this->fillUpdate) + 1; // include delete key
-        $deleteIDs = [];
-        foreach ($items as $item) {
-            if (count($item) != $length) {
-                throw new GlobalConfigException("prefixChange failed: array length is not support.");
-            }
-
-            foreach ($this->fillUpdate as $key) {
-                if (!isset($item[$key])) {
-                    throw new GlobalConfigException("prefixChange failed: {$key} not found.");
-                }
-            }
-
-            if ($item['delete']) {
-                array_push($deleteIDs, $item['id']);
-            }
-        }
-
-        // 分组下没有配置，方可删除分组
-        $e = $this->checkKeyExists($type, $deleteIDs);
-        if ($e) {
-            throw new GlobalConfigException($e);
-        }
-
-        $caches = [];
-        DB::beginTransaction();
-        try {
-            foreach ($items as $item) {
-                $id = $item['id'];
-                unset($item['id']);
-                if (key_exists('type', $item)) {
-                    throw new GlobalConfigException('无法修改：类型仅能在创建时指定');
-                }
-                if (!isset($item['delete'])) {
-                    $model = ConfigPrefix::query()->find($id, $this->fillSelect)->toArray();
-                    if ($model) {
-                        $caches[$model['key']] = json_encode($model);
-                    } else {
-                        throw new GlobalConfigException('更新失败: 数据已不存在');
-                    }
-                    if ($item['key'] != $model['key']) {
-                        // 更新分组下的配置 key_full
-                        // FIXME select
-                        $keyModels = ConfigKey::query()
-                            ->when($type == ConfigPrefix::TYPE_GROUP, function ($query) use ($id) {
-                                return $query->where('group_id', $id);
-                            })
-                            ->when($type == ConfigPrefix::TYPE_PREFIX, function ($query) use ($id) {
-                                return $query->where('prefix_id', $id);
-                            })
-                            ->get();
-                        foreach ($keyModels as $keyModel) {
-                            $key = $this->splitKey($keyModel->key_full);
-                            $key[$type] = $item['key'];
-                            $keyModel->key_full = $this->fillKeys(...$key);
-                            $keyModel->save();
-                        }
-                    }
-                    ConfigPrefix::query()
-                        ->where('id', $id)
-                        ->update($item);
-                }
-            }
-            $this->prefixDelete($authID, $type, $deleteIDs);
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $errorMsg = 'prefixChange failed: ' . $e->getMessage() . ' | ' . $e->getFile() . ' | ' . $e->getLine();
-            Log::error($errorMsg, $e->getTrace());
-            throw new GlobalConfigException($errorMsg);
-        }
-
-        try {
-            $this->cache->sets($caches);
-        } catch (\Exception $e) { // 静默
-            $errorMsg = 'prefixChange failed: ' . $e->getMessage() . ' | ' . $e->getFile() . ' | ' . $e->getLine();
-            Log::error($errorMsg, $e->getTrace());
-        }
-    }
-
-    /**
-     * 前缀表快捷删除方法。没异常就是成功
-     * @param int $authID
-     * @param string $type
-     * @param array $keys
-     * @throws GlobalConfigException
-     */
-    private function prefixDelete(int $authID, string $type, array $keys): void
-    {
-        if (!count($keys)) {
-            return ;
-        }
-        foreach ($keys as $key) {
-            if (!is_string($key)) {
-                throw new GlobalConfigException('Group change failed: ID type is not support');
-            }
-        }
-
-        $groupIDs = ConfigPrefix::query()
-            ->select('id')
-            ->whereIn('key', $keys)
-            ->where('type', $type)
-            ->get()
-            ->pluck('id');
-        $e = $this->checkKeyExists($type, $groupIDs);
-        if ($e) {
-            throw new GlobalConfigException($e);
-        }
-
-        DB::beginTransaction();
-        try {
-            ConfigPrefix::query()
-                ->whereIn('key', $keys)
-                ->where('type', $type)
-                ->delete();
-            $this->cache->deletes(...$keys);
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $errorMsg = 'prefixDelete failed: ' . $e->getMessage() . ' | ' . $e->getFile() . ' | ' . $e->getLine();
-            Log::error($errorMsg, $e->getTrace());
-            throw new GlobalConfigException($errorMsg);
-        }
-    }
-
-    /**
-     * @param $type
-     * @param Collection|array $groupIDs
-     * @return string
-     */
-    private function checkKeyExists($type, $groupIDs): string
-    {
-        $has = ConfigKey::query()
-            ->whereIn('group_id', $groupIDs)
-            ->exists();
-        if ($has) {
-            $typeName = ($type == ConfigPrefix::TYPE_GROUP) ? '分组' : '前缀';
-            return "{$typeName}下存在可用配置";
-        }
-        return '';
+        $this->prefixDelete($authID, ConfigPrefix::TYPE_PREFIX, $keys);
     }
 
     /**
@@ -440,15 +256,29 @@ class GlobalConfigManager extends GlobalConfigBase
         // FIXME 累了。后续追日志
         DB::transaction(function () use ($authID, $items) {
             $deleteIDs = [];
+            $models = ConfigKey::query()
+                ->where('id', Arr::pluck($items, 'id'))
+                ->get()
+                ->pluck(null, 'id');
             foreach ($items as $item) {
-                if (!empty($item['delete'])) {
+                if (empty($item['delete'])) {
+                    unset($item['delete']);
+
+                    if ($models[$item['id']]->group_id != $item['group_id']
+                        || $models[$item['id']]->prefix_id != $item['prefix_id']) {
+
+                        $group = $this->groupsGetByID($item['group_id']);
+                        $prefix = $this->prefixesGetByID($item['prefix_id']);
+                        $oldKeyFull = $item['key_full'];
+                        $item['key_full'] = $this->fillKeys(array_pop($group)['key'], array_pop($prefix)['key'], $item['key'])[0];
+                        ConfigValue::query()
+                            ->where(['key_full' => $oldKeyFull])
+                            ->update(['key_full' => $item['key_full']]);
+                        $this->cache->deletes($oldKeyFull);
+                    }
                     ConfigKey::query()
                         ->where('id', $item['id'])
                         ->update($item);
-
-                    ConfigValue::query()
-                        ->where([''])
-                        ->update(['' => '']);
                 } else {
                     array_push($deleteIDs, $item['id']);
                 }

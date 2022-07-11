@@ -3,9 +3,12 @@
 namespace Yggdrasill\GlobalConfig\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ConfigKey extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'gc_config_keys';
     protected $dateFormat = 'U';
     protected $fillable = [

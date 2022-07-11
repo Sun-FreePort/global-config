@@ -69,7 +69,7 @@ abstract class TestBase extends TestCase
 
         ConfigKey::insert([[
             'group_id' => 3,
-            'prefix_id' => 1,
+            'prefix_id' => count($groups) + 1,
             'key' => 'TestVal',
             'key_full' => GlobalConfig::fillKeys($groups[2]['key'], $prefixes[0]['key'], 'TestVal')[0],
             'desc' => 'test desc 1',
@@ -80,7 +80,7 @@ abstract class TestBase extends TestCase
             'visible' => 1,
         ], [
             'group_id' => 3,
-            'prefix_id' => 2,
+            'prefix_id' => count($groups) + 2,
             'key' => 'TestBiu',
             'key_full' => GlobalConfig::fillKeys($groups[2]['key'], $prefixes[1]['key'], 'TestBiu')[0],
             'desc' => 'test desc 2',
@@ -91,7 +91,7 @@ abstract class TestBase extends TestCase
             'visible' => 1,
         ], [
             'group_id' => 2,
-            'prefix_id' => 1,
+            'prefix_id' => count($groups) + 1,
             'key' => 'TestSharp',
             'key_full' => GlobalConfig::fillKeys($groups[1]['key'], $prefixes[0]['key'], 'TestSharp')[0],
             'desc' => 'test desc 3',

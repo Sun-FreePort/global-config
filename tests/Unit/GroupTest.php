@@ -22,8 +22,8 @@ class GroupTest extends TestBase
         $this->databaseFactory();
 
         $oneGroup = GlobalConfig::groupsGet($this->group);
-        $this->assertArrayHasKey($this->group, $oneGroup);
-        $this->assertCount(3, $oneGroup[$this->group]);
+        $this->assertArrayHasKey('id', $oneGroup[$this->group]);
+        $this->assertCount(4, $oneGroup[$this->group]);
     }
 
     /*
@@ -136,14 +136,18 @@ class GroupTest extends TestBase
      */
     public function test_group_delete_test()
     {
-        $this->databaseFactory();
-        $keys = [$this->group, '2424'];
+        try {
+            $this->databaseFactory();
+            $keys = [$this->group, '2424'];
 
-        $result1 = count(GlobalConfig::groupsGet(...$keys));
-        GlobalConfig::groupsDeleteByKey($this->authID, ...$keys);
-        $result2 = count(GlobalConfig::groupsGet(...$keys));
+            $result1 = count(GlobalConfig::groupsGet(...$keys));
+            GlobalConfig::groupsDeleteByKey($this->authID, ...$keys);
+            $result2 = count(GlobalConfig::groupsGet(...$keys));
 
-        $this->assertLessThan($result1, $result2);
+            $this->assertLessThan($result1, $result2);
+        } catch (\Exception $exception) {
+            var_dump($exception->getMessage());
+        }
         $this->assertIsNumeric(0);
     }
 }
