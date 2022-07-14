@@ -1,0 +1,39 @@
+{
+    "name": "uiosun/global-config",
+    "keywords": ["laravel", "config", "setting"],
+    "license": "MIT",
+    "description": "Support config set / get and other functional. (only php7.2 now.)",
+    "require": {
+        "php": "^7.2|^8.0",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^4.0",
+        "phpunit/phpunit": "^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Yggdrasill\\GlobalConfig\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Yggdrasill\\GlobalConfig\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Yggdrasill\\GlobalConfig\\GlobalConfigServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
